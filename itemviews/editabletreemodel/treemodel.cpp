@@ -68,7 +68,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
 
 }
 
-QModelIndex TreeModel::parent(const QModelIndex &child) const
+QModelIndex TreeModel::parent(const QModelIndex &index) const
 {
     if(!index.isValid())
     {
@@ -170,4 +170,12 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const
         }
     }
     return rootItem;
+}
+
+bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if(role != Qt::EditRole)
+    {
+        return false;
+    }
 }

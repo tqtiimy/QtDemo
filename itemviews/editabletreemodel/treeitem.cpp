@@ -18,6 +18,11 @@ TreeItem *TreeItem::child(int number)
     return childItems.value(number);
 }
 
+TreeItem *TreeItem::parent()
+{
+    return parentItem;
+}
+
 int TreeItem::childCount() const
 {
     return childItems.size();
@@ -43,6 +48,11 @@ bool TreeItem::insertChildren(int position, int count, int columns)
     return true;
 }
 
+QVariant TreeItem::data(int volumn) const
+{
+    return itemData.value(volumn);
+}
+
 bool TreeItem::setData(int column, const QVariant &value)
 {
     if(column < 0 || column >= itemData.size())
@@ -52,4 +62,12 @@ bool TreeItem::setData(int column, const QVariant &value)
 
     itemData[column] = value;
     return true;
+}
+
+int TreeItem::childNumber() const
+{
+    if (parentItem)
+        return parentItem->childItems.indexOf(const_cast<TreeItem*>(this));
+
+    return 0;
 }
