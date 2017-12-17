@@ -28,7 +28,7 @@ int TreeItem::childCount() const
     return childItems.size();
 }
 
-int TreeItem::columCount() const
+int TreeItem::columnCount() const
 {
     return itemData.count();//同size()
 }
@@ -70,4 +70,48 @@ int TreeItem::childNumber() const
         return parentItem->childItems.indexOf(const_cast<TreeItem*>(this));
 
     return 0;
+}
+
+bool TreeItem::insertCloumns(int position, int columns)
+{
+    if (position < 0 || position > itemData.size())
+        return false;
+
+    for(int colunm = 0; colunm < columns; ++colunm)
+    {
+        itemData.insert(position, QVariant());
+    }
+
+    foreach (TreeItem *child, childItems)//遍历子节点
+        child->insertCloumns(position, columns);
+
+    return true;
+}
+
+bool TreeItem::removeColumns(int position, int columns)
+{
+    if(position < 0 || position + columns > itemData.size())
+        return false;
+
+    for(int colunm = 0; colunm < columns; colunm++)
+    {
+        itemData.remove(position);
+    }
+
+    foreach (TreeItem *child, childItems) {
+        child->removeColumns(position, columns);
+    }
+
+    return true;
+}
+
+bool TreeItem::removeChildren(int position, int count)
+{
+    if (position < 0 || position + count > childItems.size())
+        return false;
+
+    for(int row = 0; row < count; ++row)
+        delete childItems.takeAt(position);
+
+    return true;
 }

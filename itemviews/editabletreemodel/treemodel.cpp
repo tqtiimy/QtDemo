@@ -35,7 +35,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 {
-    if(index.isValid())
+    if(!index.isValid())
         return 0;
     //flags基类默认实现返回结合体 ItemIsEnabled(使能) ItemIsSelectable(item项可被选择)
     return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
@@ -92,7 +92,7 @@ int TreeModel::rowCount(const QModelIndex &parent) const
 
 int TreeModel::columnCount(const QModelIndex &parent) const
 {
-    return rootItem->columCount();
+    return rootItem->columnCount();
 }
 
 void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
@@ -106,9 +106,9 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
 
     while (number < lines.count())
     {//遍历所有字符串
-        int position;
+        int position = 0;
         //计算每个字符串所处的层级位置，以字符串开头空格数为基准
-        while (position)
+        while (position < lines[number].length())
         {
             if(lines[number].at(position) != ' ')
                 break;
@@ -148,7 +148,7 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
 
             //附加新项到当前父亲的子列表
             TreeItem *parent = parents.last();//返回根节点
-            parent->insertChildren(parent->childCount(), 1, rootItem->columCount());//在子结点最后一个位置插入
+            parent->insertChildren(parent->childCount(), 1, rootItem->columnCount());//在子结点最后一个位置插入
             for(int column = 0; column < columnData.size(); ++column)
             {//为子节点每一列设置值
                 parent->child(parent->childCount() - 1)->setData(column, columnData[column]);
@@ -178,4 +178,73 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
     {
         return false;
     }
+
+    TreeItem *item = getItem(index);
+    bool result = item->setData(index.column(), value);
+
+    if(result)
+        emit dataChanged(index, index);//重实现此函数时，此信号必须显示发送
+
+    return result;
+}
+
+bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
+{
+    if(role != Qt::EditRole || orientation != Qt::Horizontal)
+        return false;
+
+    bool result = rootItem->setData(section, value);
+
+    if(result)
+        emit headerDataChanged(orientation, section, section);//section为要更新的段
+
+    return result;
+}
+
+bool TreeModel::insertColumns(int column, int count, const QModelIndex &parent)
+{
+    bool success;
+    beginInsertColumns(parent, column, column + count -1);//parent对应新列插入的父节点
+    success = rootItem->insertCloumns(column, count);
+    endInsertColumns();
+
+    return success;
+}
+
+bool TreeModel::insertRows(int row, int count, const QModelIndex &parent)
+{
+    TreeItem *parentItem = getItem(parent);
+    bool success;
+
+    beginInsertRows(parent, row, row + count - 1);
+    success = parentItem->insertChildren(row, count, rootItem->columnCount());
+    endInsertRows();
+
+    return success;
+}
+
+bool TreeModel::removeColumns(int column, int count, const QModelIndex &parent)
+{
+    int success;
+
+    beginRemoveColumns(parent, column, column + count - 1);
+    success = rootItem->removeColumns(column, count);
+    endRemoveColumns();
+
+    if (rootItem->columnCount() == 0)//列为零的情况下移除所有行
+        removeRows(0, rowCount());
+
+    return success;
+}
+
+bool TreeModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    TreeItem *parentItem = getItem(parent);
+    bool success = true;
+
+    beginRemoveRows(parent, row, row + count - 1);
+    success = parentItem->removeChildren(row, count);
+    endRemoveRows();
+
+    return success;
 }

@@ -13,7 +13,7 @@ public:
 
     TreeItem *child(int number);
     int childCount() const;
-    int columCount() const;
+    int columnCount() const;
     QVariant data(int volumn) const;
     bool insertChildren(int position, int count, int columns);
     bool insertCloumns(int position, int columns);
