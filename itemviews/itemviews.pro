@@ -2,7 +2,8 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     editabletreemodel \
-    stardelegate
+    stardelegate \
+    spinboxdelegate
 
 
 contains(DEFINES, QT_NO_DRAGANDDROP) : SUBDIRS -= puzzle #表示没看懂
